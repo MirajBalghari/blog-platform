@@ -1,17 +1,16 @@
 import React, { useContext, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContext';
 import { IoMdLogOut } from "react-icons/io";
 import { MdPhotoCamera } from 'react-icons/md';
 import api from '../services/api';
-import { baseUrl } from '../services/url';
 
 
 
 function Profilepic() {
 
 
-  const { authUser } = useContext(AuthContext)
+  const { authUser, profileImage } = useContext(AuthContext)
 
   const logout = async () => {
     try {
@@ -59,15 +58,12 @@ function Profilepic() {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-      navigate('/');
     })
       .catch((err) => console.log(err))
 
   }
 
-  const profilePic = authUser.profilePic ?
-    `${baseUrl}${authUser.profilePic}` :
-    `https://i.pravatar.cc/250?u=${authUser._id}`
+
 
 
   return (
@@ -83,7 +79,7 @@ function Profilepic() {
             <div onClick={() => fileRef.current.click()}
               className='relative avator cursor-pointer'>
               <div className="ring-primary hover:ring-green-500  ring-offset-base-100 h-50 w-50 rounded-full ring ring-offset-2">
-                <img src={prevImage || profilePic}
+                <img src={prevImage || profileImage}
                   alt='Profile Image'
                   className="w-full h-full object-cover rounded-full"
 

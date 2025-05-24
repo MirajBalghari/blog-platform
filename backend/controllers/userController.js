@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const path = require('path');
 const fs = require('fs')
+const cloudinary = require('../config/cloud')
 
 
 const signUp = async (req, res) => {
@@ -91,17 +92,20 @@ const editProfile = async (req, res) => {
         const user = await userModel.findById(userId);
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        if (req.file && user.profilePic) {
-            const oldpath = path.join(__dirname, '..', user.profilePic)
-            if (fs.existsSync(oldpath)) {
-                fs.unlinkSync(oldpath)
+        if (req.file ) {
+            if (user.profilePic) {
+                const profileImg = user.profilePic.split('/').pop().split('.')[0]
+                await cloudinary.uploader.destroy(profileImg);
             }
-        }
-        if (req.file) {
-            user.profilePic = `/uploads/profile/${req.file.filename}`
-            await user.save()
+            const uploadImage =await cloudinary.uploader.upload(req.file.path)
+                user.profilePic =uploadImage.secure_url  
+                fs.unlinkSync(req.file.path)
 
         }
+            
+            await user.save()
+
+        
         return res.status(200).json({ msg: 'profile pic update successful', profilePic: user.profilePic })
 
     } catch (error) {
@@ -110,9 +114,20 @@ const editProfile = async (req, res) => {
     }
 };
 
+const allUser= async(req,res)=>{
+    try {
+        const userId = req.user._id 
+        if(!userId) return res.status(400).json({msg:'User not found'})
+        const user = await userModel.find({_id:{$ne:userId}})
+        return res.status(200).json({msg:'all user get success',user})
+    } catch (error) {
+         console.error(error);
+        res.status(500).json({ error: "Something went wrong" }); 
+    }
+}
 
 
 
 
 
-module.exports = { signUp, login, profile, logOut, editProfile }
+module.exports = { signUp, login, profile, logOut, editProfile,allUser }

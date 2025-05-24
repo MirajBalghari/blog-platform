@@ -8,7 +8,7 @@ const authUser = async (req, res, next) => {
         const err = 'Unauthorized'
         if (!token) return res.status(401).json({ msg: err })
 
-        const decoded = jwt.verify(token, process.env.jwtKey);
+        const decoded = jwt.verify(token, process.env.JwtKey);
         if (!decoded) return res.status(401).json({ msg: err })
         const user = await userModel.findById(decoded.userId)
         if (!user) return res.status(401).json({ msg: err })

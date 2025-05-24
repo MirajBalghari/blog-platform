@@ -1,9 +1,9 @@
-import React, { useContext, useState } from 'react';
+import React, {  useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { AuthContext } from '../context/AuthContext'
+import  AuthContext  from '../context/AuthContext'
 
 
 function SignUp() {
@@ -15,7 +15,6 @@ function SignUp() {
   }
 
   const [user, setUser] = useState(initailuser)
-  const { setAuthUser } = useContext(AuthContext)
   const navigate = useNavigate()
 
   const handleInput = (e) => {
@@ -33,7 +32,6 @@ function SignUp() {
       .then((res) => {
         toast.success(res.data.msg)
         localStorage.setItem('token', res.data.token)
-        setAuthUser(res.data.token)
         setTimeout(() => {
           window.location.reload()
 

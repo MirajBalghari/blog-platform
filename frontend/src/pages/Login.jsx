@@ -1,7 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 
 function Login() {
@@ -11,7 +10,6 @@ function Login() {
     password: ''
   }
   const [user, setUser] = useState(initailuser)
-  const { setAuthUser } = useContext(AuthContext)
   const navigate = useNavigate()
 
   const handleInput = (e) => {
@@ -27,7 +25,6 @@ function Login() {
       .then((res) => {
         toast.success(res.data.msg)
         localStorage.setItem('token', res.data.token)
-        setAuthUser(res.data.token)
         setTimeout(() => {
           window.location.reload()
         }, 1000);

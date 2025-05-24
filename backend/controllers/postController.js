@@ -1,7 +1,9 @@
 const userModel = require('../models/userModel')
 const postModel = require('../models/postModel')
+const cloudinary = require('../config/cloud')
 const fs = require('fs');
-const path = require('path');
+const notificationModel = require('../models/notificationModel')
+const { getIo } = require('../socket/socketInit')
 
 
 const addPost = async (req, res) => {
@@ -10,19 +12,23 @@ const addPost = async (req, res) => {
 
         const authorid = req.user._id;
         const user = await userModel.findById(authorid);
-        const file = req.file.filename;
-
 
         if (!user) return res.status(401).json({ msg: 'user not fount' })
+
+        const file = await cloudinary.uploader.upload(req.file.path)
+
+
         const post = await postModel.create({
             title,
             caption,
-            image: file,
+            image: file.secure_url,
             author: authorid
         })
+
         user.posts.push(post._id)
         await user.save()
         await post.populate({ path: 'author' })
+        fs.unlinkSync(req.file.path)
         return res.status(201).json({ msg: 'New post Add', post });
     } catch (error) {
         console.error(error)
@@ -33,7 +39,9 @@ const addPost = async (req, res) => {
 
 const getAllPost = async (req, res) => {
     try {
-        const post = await postModel.find().populate('author')
+        const post = await postModel.find().populate('author', 'id name email profilePic ')
+            .populate('comment.user', 'id name email profilePic')
+            .sort({ createdAt: -1 })
         return res.status(200).json({ post })
     } catch (error) {
         console.error(error)
@@ -78,16 +86,13 @@ const updatePost = async (req, res) => {
 
         if (req.file) {
             if (post.image) {
-                const oldImageFilename = path.basename(post.image);
-                const oldImagePath = path.join(__dirname, "..", "uploads", "posts", oldImageFilename);
-
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath);
-                }
+                const publicurl = post.image.split('/').pop().split('.')[0]
+                await cloudinary.uploader.destroy(publicurl)
             }
 
-
-            post.image = req.file.filename;
+            const uploadImage = await cloudinary.uploader.upload(req.file.path)
+            post.image = uploadImage.secure_url
+            fs.unlinkSync(req.file.path)
         }
 
         await post.save();
@@ -113,13 +118,8 @@ const deletePost = async (req, res) => {
         }
 
         if (post.image) {
-            const imagePath = path.join(__dirname, "..", "uploads", "posts", path.basename(post.image));
-
-
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-
+            const publicurl = post.image.split('/').pop().split('.')[0]
+            await cloudinary.uploader.destroy(publicurl)
         }
 
         const deletedPostId = post._id.toString();
@@ -135,4 +135,83 @@ const deletePost = async (req, res) => {
     }
 };
 
-module.exports = { addPost, getAllPost, updatePost, getOnePost, deletePost }
+
+const like = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const postId = req.params.id
+        const post = await postModel.findById(postId)
+        if (post.like.includes(userId.toString())) {
+
+            post.like = post.like.filter((id) => id.toString() !== userId.toString())
+            await post.save()
+
+            getIo().emit('updateLike', { postId, like: post.like })
+
+            await notificationModel.findOneAndDelete({
+                receiver: post.author,
+                type: 'like',
+                relatedPost: postId,
+                relatedUser: userId
+            })
+
+            return res.status(200).json({ msg: 'Disliked post ', success: true, post })
+
+        } else {
+            post.like.push(userId)
+        }
+        await post.save()
+        getIo().emit('updateLike', { postId, like: post.like })
+        if (userId !== post.author.toString()) {
+            await notificationModel.create({
+                receiver: post.author,
+                type: 'like',
+                relatedPost: postId,
+                relatedUser: userId
+            })
+        }
+        return res.status(200).json({ msg: 'Liked post ', success: true, post })
+
+    } catch (error) {
+        console.log(error)
+
+        return res.status(500).json({ msg: 'internal like post error', error, success: false })
+    }
+}
+
+const comment = async (req, res) => {
+    try {
+        const userId = req.user._id
+        const postId = req.params.id
+        const { content } = req.body
+
+        if (!content) {
+            return res.status(400).json({ msg: 'Comment content is required', success: false });
+        }
+        const post = await postModel.findByIdAndUpdate(postId, {
+            $push: { comment: { content: content, user: userId } }
+        }, { new: true }).populate('comment.user', 'name email profilePic ')
+        if (userId !== post.author.toString()) {
+            await notificationModel.create({
+                receiver: post.author,
+                type: "comment",
+                relatedPost: postId,
+                relatedUser: userId
+            })
+        }
+
+        getIo().emit('sendComment', { postId, comm: post.comment })
+        return res.status(200).json({ msg: 'comment send', success: true, post })
+
+    } catch (error) {
+        console.log(error)
+
+        return res.status(500).json({ msg: 'internal like post error', error, success: false })
+    }
+}
+
+
+
+
+
+module.exports = { addPost, getAllPost, updatePost, getOnePost, deletePost, like, comment }

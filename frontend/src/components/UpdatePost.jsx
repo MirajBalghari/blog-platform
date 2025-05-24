@@ -3,7 +3,6 @@ import { IoSend } from 'react-icons/io5';
 import { MdClose } from "react-icons/md";
 import toast from 'react-hot-toast';
 import api from '../services/api';
-import { baseUrl } from '../services/url';
 
 
 function UpdatePost({ postId }) {
@@ -32,7 +31,7 @@ function UpdatePost({ postId }) {
             });
 
             if (res.data.post.image) {
-              setPreview(`${baseUrl}/uploads/posts/${res.data.post.image}`);
+              setPreview(res.data.post.image);
             }
           }
         } catch (err) {
@@ -75,7 +74,7 @@ function UpdatePost({ postId }) {
       setTimeout(() => {
         window.location.reload();
 
-      },1000);
+      }, 1000);
     } catch (err) {
       console.error(err);
       toast.error('Failed to update post');
