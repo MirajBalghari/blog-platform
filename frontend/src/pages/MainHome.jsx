@@ -34,7 +34,7 @@ function MainHome() {
       <div className="flex flex-col md:flex-row items-start md:gap-3 w-full bg-gray-100">
         <Topbar />
 
-        <div className='lg:w-[25%] hidden md:block w-full  bg-white min-h-90  mt-17 p-2'>
+        <div className='md:w-[25%] hidden md:block w-full  bg-white min-h-90  mt-17 p-2'>
 
           <img src={profileImage} alt="/profile" className='w-30 h-30  rounded-full object-cover mx-auto' />
           <div className='mt-5 flex flex-col gap-2 w-full  justify-center'>

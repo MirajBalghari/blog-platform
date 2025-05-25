@@ -45,9 +45,7 @@ function AllPost({ post }) {
     await api.get(`/post/like/${postId}`)
       .then((res) => {
         toast.success(res.data.msg)
-        console.log(res)
         setlikes(res.data.post.like)
-        console.log(res.data.post)
       })
       .catch((err) => console.log(err))
   }
