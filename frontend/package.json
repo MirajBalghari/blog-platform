@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.9",
     "axios": "^1.8.1",
+    "backend": "file:..",
     "dotenv": "^16.4.7",
     "jwt-decode": "^4.0.0",
     "moment": "^2.30.1",

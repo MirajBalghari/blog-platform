@@ -16,7 +16,7 @@ function MainHome() {
   const logout = async () => {
     try {
       const res = await api.get('/user/logout');
-      console.log(res.data);
+      // console.log(res.data);
       localStorage.clear('token')
       setTimeout(() => {
         window.location.reload()

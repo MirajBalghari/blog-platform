@@ -21,7 +21,7 @@ function UpdatePost({ postId }) {
       const getOnePost = async () => {
         try {
           const res = await api.get(`/post/getonepost/${postId}`);
-          console.log(res)
+          // console.log(res)
 
           if (res.data.post) {
             setPostData({
