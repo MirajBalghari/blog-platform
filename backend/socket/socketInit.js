@@ -16,7 +16,7 @@ const socketInit = (server) => {
     })
 
     socket.on('disconnect', () => {
-      console.log('disconnet', socket.id)
+      // console.log('disconnet', socket.id)
     })
   })
 

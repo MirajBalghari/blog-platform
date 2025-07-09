@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
     authUser?.profilePic :
     `https://i.pravatar.cc/250?u=${authUser?._id}`
 
-        const token = localStorage.getItem('token')
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -30,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
 
     getAuth()
-  }, [token])
+  }, [])
 
 
 
@@ -56,14 +55,13 @@ export const AuthProvider = ({ children }) => {
       }).catch((err) => console.log(err))
   }
 
-  useEffect(() => {
-    getNotification()
-  }, [notification])
 
   useEffect(() => {
     getAllPost()
     getAllUser()
-  }, [posts, allUser])
+        getNotification()
+
+  }, [])
 
 
 

@@ -15,7 +15,6 @@ function AllPost({ post }) {
   const { authUser, } = useContext(AuthContext)
   const [postId, setPostId] = useState(null)
   const [comment, setComment] = useState('')
-
   const [comments, setComments] = useState(post?.comment || [])
   const [showComment, setShowComment] = useState(false)
   const [likes, setlikes] = useState(post?.like || [])
